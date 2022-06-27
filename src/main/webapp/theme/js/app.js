@@ -112,8 +112,6 @@ function renderOperation(operationsList, status, operationId, operationDescripti
     descriptionDiv.appendChild(time);
 
     if(status === "open") {
-    /*    TODO Dopisz pozostałą część funkcji tak, aby wynikiem był kompletny HTML operacji,
-            taki jak w przykładowym otwartym zadaniu (tj. razem z buttonami) w pliku index.html.*/
     }
 }
 
