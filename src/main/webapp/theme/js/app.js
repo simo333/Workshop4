@@ -2,12 +2,18 @@ const apiKey = "7a5fff0c-7beb-43b9-a075-beb3484ff5af";
 const apiHost = 'https://todo-api.coderslab.pl';
 
 document.addEventListener('DOMContentLoaded', function () {
-    apiListTasks();
+    apiListTasks()
+        .then(function (data) {
+        data.data.forEach(function (task) {
+            renderTask(task.id, task.title, task.description, task.status);
+        });
+    });
+
 });
 
 
 function apiListTasks() {
-    fetch(apiHost + "/api/tasks", {
+    return fetch(apiHost + "/api/tasks", {
         headers: {
             "Authorization": apiKey
         }
@@ -17,11 +23,6 @@ function apiListTasks() {
                 return res.json();
             }
             throw new Error("Fetching failed.");
-        })
-        .then(function (data) {
-            data.data.forEach(function (task) {
-                renderTask(task.id, task.title, task.description, task.status);
-            });
         })
         .catch(function (err) {
             alert("Nie można wczytać danych.");
@@ -54,7 +55,7 @@ function renderTask(taskId, title, description, status) {
     const headerRightDiv = document.createElement('div');
     headerDiv.appendChild(headerRightDiv);
 
-    if(status === "open") {
+    if (status === "open") {
         const finishButton = document.createElement("button");
         finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
         finishButton.innerText = 'Finish';
@@ -65,4 +66,68 @@ function renderTask(taskId, title, description, status) {
     deleteButton.className = 'btn btn-outline-danger btn-sm ml-2';
     deleteButton.innerText = 'Delete';
     headerRightDiv.appendChild(deleteButton);
+
+    const ul = document.createElement('ul');
+    section.appendChild(ul);
+
+    apiListOperationsForTask(taskId).then(
+        function(response) {
+            response.data.forEach(function(operation) {
+                renderOperation(ul, operation.id, status, operation.description, operation.timeSpent); }
+            );
+        }
+    )
+}
+
+function apiListOperationsForTask(taskId) {
+    return fetch(apiHost + `/api/tasks/${taskId}/operations`, {
+        headers: {
+            "Authorization": apiKey
+        }
+    })
+        .then(function (res) {
+            if (res.ok) {
+                return res.json();
+            }
+            throw new Error("Fetching failed.");
+        })
+        .catch(function (err) {
+            alert("Nie można wczytać danych.");
+            console.log(err);
+        });
+}
+
+function renderOperation(operationsList, status, operationId, operationDescription, timeSpent) {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
+    operationsList.appendChild(li);
+
+    const descriptionDiv = document.createElement("div");
+    descriptionDiv.innerText = operationDescription;
+    li.appendChild(descriptionDiv);
+
+    const time = document.createElement("span");
+    time.className = "badge badge-success badge-pill ml-2"
+    time.innerText = timeRefactor(timeSpent);
+    descriptionDiv.appendChild(time);
+
+    if(status === "open") {
+    /*    TODO Dopisz pozostałą część funkcji tak, aby wynikiem był kompletny HTML operacji,
+            taki jak w przykładowym otwartym zadaniu (tj. razem z buttonami) w pliku index.html.*/
+    }
+}
+
+function timeRefactor(timeInMinutes) {
+    if(timeInMinutes === 0) {
+        return "0m";
+    }
+    const hours = Math.floor(timeInMinutes / 60);
+    const minutes = timeInMinutes % 60;
+    if(hours === 0) {
+        return `${minutes}m`;
+    }
+    if(minutes === 0) {
+        return `${hours}h`;
+    }
+    return `${hours}h ${minutes}m`
 }
