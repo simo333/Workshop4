@@ -9,8 +9,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-});
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const title = document.querySelector("#title").value;
+        const description = document.querySelector("#description").value;
 
+        apiCreateTask(title, description)
+            .then(function (task) {
+                console.log("Added a new task.", task);
+                apiListTasks()
+                    .then(function (data) {
+                       data.data.forEach(function (task) {
+                          renderTask(task.id, task.title, task.description, task.status);
+                       });
+                    });
+            });
+    });
+});
 
 function apiListTasks() {
     return fetch(apiHost + "/api/tasks", {
@@ -129,3 +145,24 @@ function timeRefactor(timeInMinutes) {
     }
     return `${hours}h ${minutes}m`;
 }
+
+/* Creating tasks */
+function apiCreateTask(title, description) {
+    console.log(title, description);
+    return fetch(apiHost + "/api/tasks", {
+        headers: {"Authorization": apiKey, "Content-Type": "application/json"},
+        body: JSON.stringify({title: title, description: description, status: "open"}),
+        method: "POST"
+    })
+        .then(function (res) {
+            if (res.ok) {
+                return res.json();
+            }
+            throw new Error("Fetching failed.");
+        })
+        .catch(function (err) {
+            alert("Nie można wczytać danych.");
+            console.log(err);
+        });
+}
+
