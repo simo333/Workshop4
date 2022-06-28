@@ -2,13 +2,15 @@ const apiKey = "7a5fff0c-7beb-43b9-a075-beb3484ff5af";
 const apiHost = 'https://todo-api.coderslab.pl';
 
 document.addEventListener('DOMContentLoaded', function () {
+    /* Listing tasks */
     apiListTasks()
         .then(function (data) {
-        data.data.forEach(function (task) {
-            renderTask(task.id, task.title, task.description, task.status);
+            data.data.forEach(function (task) {
+                renderTask(task.id, task.title, task.description, task.status);
+            });
         });
-    });
 
+    /* Creating task */
     const form = document.querySelector("form");
     form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -20,12 +22,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log("Added a new task.", task);
                 apiListTasks()
                     .then(function (data) {
-                       data.data.forEach(function (task) {
-                          renderTask(task.id, task.title, task.description, task.status);
-                       });
+                        data.data.forEach(function (task) {
+                            renderTask(task.id, task.title, task.description, task.status);
+                        });
                     });
             });
     });
+
 });
 
 function apiListTasks() {
@@ -81,15 +84,23 @@ function renderTask(taskId, title, description, status) {
     const deleteButton = document.createElement('button');
     deleteButton.className = 'btn btn-outline-danger btn-sm ml-2';
     deleteButton.innerText = 'Delete';
+
+    deleteButton.addEventListener("click", function () {
+        apiDeleteTask(taskId)
+            .then(function () {
+                section.remove();
+            })
+    });
     headerRightDiv.appendChild(deleteButton);
 
     const ul = document.createElement('ul');
     section.appendChild(ul);
 
     apiListOperationsForTask(taskId).then(
-        function(response) {
-            response.data.forEach(function(operation) {
-                renderOperation(ul, operation.id, status, operation.description, operation.timeSpent); }
+        function (response) {
+            response.data.forEach(function (operation) {
+                    renderOperation(ul, operation.id, status, operation.description, operation.timeSpent);
+                }
             );
         }
     )
@@ -127,20 +138,20 @@ function renderOperation(operationsList, status, operationId, operationDescripti
     time.innerText = timeRefactor(timeSpent);
     descriptionDiv.appendChild(time);
 
-    if(status === "open") {
+    if (status === "open") {
     }
 }
 
 function timeRefactor(timeInMinutes) {
-    if(timeInMinutes === 0) {
+    if (timeInMinutes === 0) {
         return "0m";
     }
     const hours = Math.floor(timeInMinutes / 60);
     const minutes = timeInMinutes % 60;
-    if(hours === 0) {
+    if (hours === 0) {
         return `${minutes}m`;
     }
-    if(minutes === 0) {
+    if (minutes === 0) {
         return `${hours}h`;
     }
     return `${hours}h ${minutes}m`;
@@ -148,7 +159,6 @@ function timeRefactor(timeInMinutes) {
 
 /* Creating tasks */
 function apiCreateTask(title, description) {
-    console.log(title, description);
     return fetch(apiHost + "/api/tasks", {
         headers: {"Authorization": apiKey, "Content-Type": "application/json"},
         body: JSON.stringify({title: title, description: description, status: "open"}),
@@ -166,3 +176,19 @@ function apiCreateTask(title, description) {
         });
 }
 
+/* Deleting tasks */
+function apiDeleteTask(taskId) {
+    return fetch(apiHost + "/api/tasks/" + taskId, {
+        headers: {"Authorization": apiKey},
+        method: "DELETE"
+    })
+        .then(function (res) {
+            if (res.ok) {
+                return res.json();
+            }
+            throw new Error("Deleting failed");
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
+}
