@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         apiCreateTask(title, description)
             .then(function (task) {
-                console.log("Added a new task.", task);
                 apiListTasks()
                     .then(function (data) {
                         data.data.forEach(function (task) {
@@ -94,6 +93,7 @@ function renderTask(taskId, title, description, status) {
     headerRightDiv.appendChild(deleteButton);
 
     const ul = document.createElement('ul');
+    ul.className = "list-group list-group-flush";
     section.appendChild(ul);
 
     apiListOperationsForTask(taskId).then(
@@ -104,6 +104,40 @@ function renderTask(taskId, title, description, status) {
             );
         }
     )
+
+    /* rendering input section for creating operations */
+    const divBottom = document.createElement("div");
+    divBottom.className = "card-body";
+    const formInput = document.createElement("form");
+    const divInput = document.createElement("div");
+    divInput.className = "input-group";
+    const inputOperation = document.createElement("input");
+    inputOperation.className = "form-control";
+    inputOperation.placeholder = "Operation description";
+    inputOperation.type = "text";
+    inputOperation.minLength = 5;
+    const divButton = document.createElement("div");
+    divButton.className = "input-group-append";
+    const submitButton = document.createElement("button");
+    submitButton.className = "btn btn-info";
+    submitButton.innerText = "Add";
+    divButton.appendChild(submitButton);
+    divInput.appendChild(inputOperation);
+    divInput.appendChild(divButton);
+    formInput.appendChild(divInput);
+    divBottom.appendChild(formInput);
+    section.appendChild(divBottom);
+
+    formInput.addEventListener("submit", function (e) {
+        e.preventDefault();
+        console.log(inputOperation.value);
+        apiCreateOperationForTask(taskId, inputOperation.value)
+            .then(function (data) {
+                const operation = data.data;
+                console.log("operation", operation);
+                renderOperation(ul, operation.id, status, operation.description, operation.timeSpent);
+            });
+    });
 }
 
 function apiListOperationsForTask(taskId) {
@@ -195,9 +229,9 @@ function apiDeleteTask(taskId) {
 
 /* Adding operations to task */
 function apiCreateOperationForTask(taskId, description) {
-    return fetch(apiHost + `api/tasks/${taskId}/operations`, {
-        headers: {"Authorization": apiKey},
-        body: JSON.stringify({description: description, timeSpent: 0}),
+    return fetch(apiHost + `/api/tasks/${taskId}/operations`, {
+        headers: {"Authorization": apiKey, "Content-Type": "application/json"},
+        body: JSON.stringify({description: description}),
         method: "POST"
     })
         .then(function (res) {
