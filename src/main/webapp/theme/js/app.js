@@ -171,7 +171,7 @@ function apiCreateTask(title, description) {
             throw new Error("Fetching failed.");
         })
         .catch(function (err) {
-            alert("Nie można wczytać danych.");
+            alert("Nie można dodać danych.");
             console.log(err);
         });
 }
@@ -189,6 +189,25 @@ function apiDeleteTask(taskId) {
             throw new Error("Deleting failed");
         })
         .catch(function (err) {
+            console.log(err);
+        });
+}
+
+/* Adding operations to task */
+function apiCreateOperationForTask(taskId, description) {
+    return fetch(apiHost + `api/tasks/${taskId}/operations`, {
+        headers: {"Authorization": apiKey},
+        body: JSON.stringify({description: description, timeSpent: 0}),
+        method: "POST"
+    })
+        .then(function (res) {
+            if (res.ok) {
+                return res.json();
+            }
+            throw new Error("Fetching failed.");
+        })
+        .catch(function (err) {
+            alert("Nie można dodać danych.");
             console.log(err);
         });
 }
