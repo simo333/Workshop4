@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+/* Fetching all tasks from server */
 function apiListTasks() {
     return fetch(apiHost + "/api/tasks", {
         headers: {
@@ -48,6 +49,7 @@ function apiListTasks() {
         });
 }
 
+/* Adding a new section with task to the html */
 function renderTask(taskId, title, description, status) {
     const main = document.querySelector("main");
     const section = document.createElement("section");
@@ -104,7 +106,7 @@ function renderTask(taskId, title, description, status) {
         }
     );
 
-    /* rendering input section for creating operations */
+    /* Rendering input section for creating operations */
     const divBottom = document.createElement("div");
     divBottom.className = "card-body";
     const formInput = document.createElement("form");
@@ -137,6 +139,7 @@ function renderTask(taskId, title, description, status) {
     });
 }
 
+/* Fetching operations for given task id */
 function apiListOperationsForTask(taskId) {
     return fetch(apiHost + `/api/tasks/${taskId}/operations`, {
         headers: {
@@ -155,6 +158,7 @@ function apiListOperationsForTask(taskId) {
         });
 }
 
+/* Adding new li (operation to the given ul (list of operation) */
 function renderOperation(operationsList, status, operationId, operationDescription, timeSpent) {
     const li = document.createElement("li");
     li.className = "list-group-item d-flex justify-content-between align-items-center";
@@ -195,6 +199,12 @@ function renderOperation(operationsList, status, operationId, operationDescripti
                 .then(function (response) {
                     timeSpent = response.data.timeSpent;
                     time.innerText = timeRefactor(timeSpent);
+                });
+        });
+        deleteOperationButton.addEventListener("click", function () {
+            apiDeleteOperation(operationId)
+                .then(function () {
+                    li.remove();
                 });
         });
     }
@@ -288,4 +298,21 @@ function apiUpdateOperation(operationId, description, timeSpent) {
             alert("Nie można dodać czasu.");
             console.log(err);
         })
+}
+
+/* Deleting task operations */
+function apiDeleteOperation(operationId) {
+    return fetch(apiHost + `/api/operations/${operationId}`, {
+        headers: {"Authorization": apiKey},
+        method: "DELETE"
+    })
+        .then(function (res) {
+            if (res.ok) {
+                return res.json();
+            }
+            throw new Error("Deleting failed");
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
 }
