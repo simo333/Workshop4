@@ -82,7 +82,7 @@ function renderTask(taskId, title, description, status) {
 
         finishButton.addEventListener("click", function () {
             apiUpdateTask(taskId, title, description, "closed")
-                .then(function (res) {
+                .then(function () {
                     const openOnlyElements = section.querySelectorAll(".js-task-open-only");
                     openOnlyElements.forEach(function (element) {
                        element.remove();
