@@ -79,6 +79,16 @@ function renderTask(taskId, title, description, status) {
         finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
         finishButton.innerText = 'Finish';
         headerRightDiv.appendChild(finishButton);
+
+        finishButton.addEventListener("click", function () {
+            apiUpdateTask(taskId, title, description, "closed")
+                .then(function () {
+                    const openOnlyElements = section.querySelectorAll(".js-task-open-only");
+                    openOnlyElements.forEach(function (element) {
+                       element.remove();
+                    });
+                });
+        });
     }
 
     const deleteButton = document.createElement('button');
@@ -108,7 +118,7 @@ function renderTask(taskId, title, description, status) {
 
     /* Rendering input section for creating operations */
     const divBottom = document.createElement("div");
-    divBottom.className = "card-body";
+    divBottom.className = "card-body js-task-open-only";
     const formInput = document.createElement("form");
     const divInput = document.createElement("div");
     divInput.className = "input-group";
@@ -137,6 +147,7 @@ function renderTask(taskId, title, description, status) {
                 renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
             });
     });
+
 }
 
 /* Fetching operations for given task id */
@@ -175,6 +186,7 @@ function renderOperation(operationsList, status, operationId, operationDescripti
 
     if (status === "open") {
         const manageOperation = document.createElement("div");
+        manageOperation.className = "js-task-open-only";
         const timeButton15m = document.createElement("button");
         timeButton15m.innerText = "+15m";
         timeButton15m.className = "btn btn-outline-success btn-sm mr-2";
@@ -252,10 +264,9 @@ function apiDeleteTask(taskId) {
         method: "DELETE"
     })
         .then(function (res) {
-            if (res.ok) {
-                return res.json();
+            if (!res.ok) {
+                throw new Error("Deleting failed");
             }
-            throw new Error("Deleting failed");
         })
         .catch(function (err) {
             console.log(err);
@@ -307,10 +318,27 @@ function apiDeleteOperation(operationId) {
         method: "DELETE"
     })
         .then(function (res) {
+            if (!res.ok) {
+                throw new Error("Deleting failed");
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
+}
+
+/* Setting task as finished */
+function apiUpdateTask(taskId, title, description, status) {
+    return fetch(apiHost + `/api/tasks/${taskId}`, {
+        headers: {"Authorization": apiKey, "Content-Type": "application/json"},
+        body: JSON.stringify({title: title, description: description, status: status}),
+        method: "PUT"
+    })
+        .then(function (res) {
             if (res.ok) {
                 return res.json();
             }
-            throw new Error("Deleting failed");
+            throw new Error("Updating failed");
         })
         .catch(function (err) {
             console.log(err);
