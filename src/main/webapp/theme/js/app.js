@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const description = document.querySelector("#description").value;
 
         apiCreateTask(title, description)
-            .then(function (task) {
+            .then(function () {
                 apiListTasks()
                     .then(function (data) {
                         data.data.forEach(function (task) {
