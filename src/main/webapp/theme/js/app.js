@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const description = document.querySelector("#description").value;
 
         apiCreateTask(title, description)
-            .then(function (task) {
+            .then(function () {
                 apiListTasks()
                     .then(function (data) {
                         data.data.forEach(function (task) {
@@ -72,7 +72,6 @@ function renderTask(taskId, title, description, status) {
 
     const headerRightDiv = document.createElement('div');
     headerDiv.appendChild(headerRightDiv);
-
     if (status === "open") {
         const finishButton = document.createElement("button");
         finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
@@ -99,11 +98,11 @@ function renderTask(taskId, title, description, status) {
     apiListOperationsForTask(taskId).then(
         function (response) {
             response.data.forEach(function (operation) {
-                    renderOperation(ul, operation.id, status, operation.description, operation.timeSpent);
+                    renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
                 }
             );
         }
-    )
+    );
 
     /* rendering input section for creating operations */
     const divBottom = document.createElement("div");
@@ -130,12 +129,10 @@ function renderTask(taskId, title, description, status) {
 
     formInput.addEventListener("submit", function (e) {
         e.preventDefault();
-        console.log(inputOperation.value);
         apiCreateOperationForTask(taskId, inputOperation.value)
             .then(function (data) {
                 const operation = data.data;
-                console.log("operation", operation);
-                renderOperation(ul, operation.id, status, operation.description, operation.timeSpent);
+                renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
             });
     });
 }
@@ -173,9 +170,37 @@ function renderOperation(operationsList, status, operationId, operationDescripti
     descriptionDiv.appendChild(time);
 
     if (status === "open") {
+        const manageOperation = document.createElement("div");
+        const timeButton15m = document.createElement("button");
+        timeButton15m.innerText = "+15m";
+        timeButton15m.className = "btn btn-outline-success btn-sm mr-2";
+        const timeButton1h = document.createElement("button");
+        timeButton1h.innerText = "+1h";
+        timeButton1h.className = "btn btn-outline-success btn-sm mr-2";
+        const deleteOperationButton = document.createElement("button");
+        deleteOperationButton.className = "btn btn-outline-danger btn-sm";
+        deleteOperationButton.innerText = "Delete";
+        manageOperation.append(timeButton15m, timeButton1h, deleteOperationButton);
+        li.append(manageOperation);
+
+        timeButton15m.addEventListener("click", function () {
+            apiUpdateOperation(operationId, operationDescription, timeSpent + 15)
+                .then(function (response) {
+                    timeSpent = response.data.timeSpent;
+                    time.innerText = timeRefactor(timeSpent);
+                });
+        });
+        timeButton1h.addEventListener("click", function () {
+            apiUpdateOperation(operationId, operationDescription, timeSpent + 60)
+                .then(function (response) {
+                    timeSpent = response.data.timeSpent;
+                    time.innerText = timeRefactor(timeSpent);
+                });
+        });
     }
 }
 
+/* Calculating time in minutes to time in hours and minutes (e.g. 70m to 1h 10m) */
 function timeRefactor(timeInMinutes) {
     if (timeInMinutes === 0) {
         return "0m";
@@ -244,4 +269,23 @@ function apiCreateOperationForTask(taskId, description) {
             alert("Nie można dodać danych.");
             console.log(err);
         });
+}
+
+/* Updating task operations */
+function apiUpdateOperation(operationId, description, timeSpent) {
+    return fetch(apiHost + `/api/operations/${operationId}`, {
+        headers: {"Authorization": apiKey, "Content-Type": "application/json"},
+        body: JSON.stringify({description: description, timeSpent: timeSpent}),
+        method: "PUT"
+    })
+        .then(function (res) {
+            if (res.ok) {
+                return res.json();
+            }
+            throw new Error("Fetching failed.");
+        })
+        .catch(function (err) {
+            alert("Nie można dodać czasu.");
+            console.log(err);
+        })
 }
