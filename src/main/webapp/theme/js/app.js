@@ -102,7 +102,7 @@ function renderTask(taskId, title, description, status) {
                 }
             );
         }
-    )
+    );
 
     /* rendering input section for creating operations */
     const divBottom = document.createElement("div");
@@ -182,6 +182,21 @@ function renderOperation(operationsList, status, operationId, operationDescripti
         deleteOperationButton.innerText = "Delete";
         manageOperation.append(timeButton15m, timeButton1h, deleteOperationButton);
         li.append(manageOperation);
+
+        timeButton15m.addEventListener("click", function () {
+            apiUpdateOperation(operationId, operationDescription, timeSpent + 15)
+                .then(function (response) {
+                    timeSpent = response.data.timeSpent;
+                    time.innerText = timeRefactor(timeSpent);
+                });
+        });
+        timeButton1h.addEventListener("click", function () {
+            apiUpdateOperation(operationId, operationDescription, timeSpent + 60)
+                .then(function (response) {
+                    timeSpent = response.data.timeSpent;
+                    time.innerText = timeRefactor(timeSpent);
+                });
+        });
     }
 }
 
