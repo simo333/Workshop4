@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                     });
             });
+        form.reset();
     });
 
 });
@@ -147,6 +148,7 @@ function renderTask(taskId, title, description, status) {
                 renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
             });
     });
+    formInput.reset();
 
 }
 
