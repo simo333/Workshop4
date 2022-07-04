@@ -147,8 +147,9 @@ function renderTask(taskId, title, description, status) {
                 const operation = data.data;
                 renderOperation(ul, status, operation.id, operation.description, operation.timeSpent);
             });
+        formInput.reset();
     });
-    formInput.reset();
+
 
 }
 
